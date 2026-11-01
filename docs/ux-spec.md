@@ -325,13 +325,13 @@ A move whose journal is unfinished shows **Needs attention** with [Finish] [Roll
 1. **Find instances** (window opens straight into this, no splash). Title: **Finding Claude on this Mac.** Rows appear as found, each with tile, name and session count: Claude 310 · Work 86 · Client 28 · Lab 0. Under 1 s typical. Button: **Continue**.
 2. **Name your accounts.** Title: **Which accounts are these?** Subtitle: **Claude stores account IDs, not emails. Name each one once.**
    One card per account id:
-   - ID tail in mono: `eb90b3bb`
+   - ID tail in mono: `af49c28e`
    - Where it's signed in now: **Signed in to Claude now** (or **Not signed in anywhere now**)
    - Sessions: **310 in Claude, 82 in Work**
    - Three recent titles, so the user recognises it: "main:planning-Playable design research…", "Fix export filter…"
    - Text field, placeholder **Name or email**
    - Link: **Check in Work** (brings that instance forward; its Settings ▸ Account shows the email)
-   Buttons: **Skip for Now** · **Done** (default). Skipped accounts show their ID tail (`eb90b3bb`) with a **Name…** button in the sidebar.
+   Buttons: **Skip for Now** · **Done** (default). Skipped accounts show their ID tail (`af49c28e`) with a **Name…** button in the sidebar.
 3. Main window, scoped to **Hidden in Their App** if it has sessions, with a one-time callout on the sidebar row: **82 sessions are hidden because Work is signed in to Team account. Drag them to an account that's signed in to see them again.**
 
 Rename later: select an account row and press Return, or **Name…** in its context menu.
@@ -414,7 +414,7 @@ Voice: plain, direct, active. Name the app and the account in every string that 
 | Undo running | Restoring "Refactor payment…" | (none) |
 | Undo done | Restored to Work · you@example.com. | (none) |
 | Rolled back | Move rolled back. Nothing changed. | Show Log |
-| Labelled | Named eb90b3bb "you@example.com". | Undo |
+| Labelled | Named af49c28e "you@example.com". | Undo |
 
 ### Errors
 

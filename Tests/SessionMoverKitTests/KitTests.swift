@@ -103,7 +103,7 @@ final class KitTests: XCTestCase {
         let scanner = LibraryScanner(env: fx.env, running: NoApps())
         XCTAssertEqual(scanner.scan().allEntries.count, 7)
         try fx.entry(".claude-profiles/alpha/Library/Application Support/Claude/claude-code-sessions/\(Fixture.acctB)/\(Fixture.orgX)",
-                     "local_bbbb0099", title: "New", cli: "1714ab38-dd7a-43ae-a4c1-fb17938f500b", cwd: fx.existingFolder, last: 1_793_400_000_000, extra: "")
+                     "local_bbbb0099", title: "New", cli: "28c8852f-5fb5-4656-a73c-7063168a5c99", cwd: fx.existingFolder, last: 1_793_400_000_000, extra: "")
         XCTAssertEqual(scanner.scan().allEntries.count, 8)
     }
 
@@ -192,7 +192,7 @@ final class KitTests: XCTestCase {
         try store.save(s)
         XCTAssertEqual(store.load(), s)
         XCTAssertEqual(store.load().labels.display(account: Fixture.acctA), "you@example.com")
-        XCTAssertEqual(store.load().labels.display(account: Fixture.acctB), "eb90b3bb")
+        XCTAssertEqual(store.load().labels.display(account: Fixture.acctB), "af49c28e")
         XCTAssertTrue(store.file.path.hasSuffix("Library/Application Support/SessionMover/settings.json"))
         s.labels.setAccount(Fixture.acctA, name: "")
         XCTAssertNil(s.labels.name(forAccount: Fixture.acctA))

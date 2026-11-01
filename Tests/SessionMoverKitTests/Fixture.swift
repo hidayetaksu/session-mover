@@ -5,11 +5,11 @@ import Foundation
 /// a broken entry, a .tmp file, and a ~/.claude/sessions folder with a .json and a .key.
 struct Fixture {
     static let secret = "SECRET-OAUTH-TOKEN-do-not-surface"
-    static let acctA = "dcedd406-aafd-4aa2-a511-5a51caba92a1"
-    static let acctB = "eb90b3bb-cd87-4b5c-a83a-4f6ea484c48c"
-    static let orgX = "2a5d8f8f-ddfc-460a-aee5-4de76b85ff7c"
-    static let orgY = "cce874a4-32d6-4294-a91e-3e12425c85c3"
-    static let cliBusy = "057d9a7e-d11e-4e5a-af5f-e3c4ff0344f6"
+    static let acctA = "8490f485-d7b1-4b3f-afe6-a0080a129d7e"
+    static let acctB = "af49c28e-8815-4aed-abf8-5aeeca43d876"
+    static let orgX = "551669f7-f059-43f9-ac49-7be50daf2f34"
+    static let orgY = "12327cc6-780c-4bf0-a9cd-d677d5606a13"
+    static let cliBusy = "5da54b2c-3145-4fb1-a3db-50f3d4f77dc5"
 
     let root: URL
     var home: URL { root.appendingPathComponent("home") }
@@ -47,17 +47,17 @@ struct Fixture {
         let missing = root.appendingPathComponent("gone/folder").path
         // original: account A, org X: 3 entries (one archived with PRs, one with limit error + missing folder)
         try entry("\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)", "local_aaaa0001", title: "Fix export regex", cli: Self.cliBusy, cwd: dir, last: 1_793_000_000_000, extra: #""branch":"claude/fix-regex","prs":[{"prNumber":843}],"unknownField":{"a":[1,2]}"#)
-        try entry("\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)", "local_aaaa0002", title: "Old archived thing", cli: "fe56159c-da13-4589-aa09-bbfd51cb6d4e", cwd: dir, last: 1_792_000_000_000, extra: #""isArchived":true,"isStarred":true"#)
-        try entry("\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)", "local_aaaa0003", title: "Hit the limit", cli: "3152f529-8a3f-4550-aca5-1ef8deef4421", cwd: missing, last: 1_791_000_000_000, extra: #""error":"You've hit your session limit · resets 1:30am (America/Los_Angeles)""#)
+        try entry("\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)", "local_aaaa0002", title: "Old archived thing", cli: "3af5413f-ad2d-4f03-a684-3026a900f317", cwd: dir, last: 1_792_000_000_000, extra: #""isArchived":true,"isStarred":true"#)
+        try entry("\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)", "local_aaaa0003", title: "Hit the limit", cli: "56b71fd4-bc47-4a38-afb5-286a8622c7af", cwd: missing, last: 1_791_000_000_000, extra: #""error":"You've hit your session limit · resets 1:30am (America/Los_Angeles)""#)
         try write("{ not json", "\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)/local_broken.json")
         try write("{}", "\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)/local_aaaa0009.json.tmp")
         try write("{}", "\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)/scheduled-tasks.json")
         try write(#"{"v":1,"archived":["local_aaaa0002"]}"#, "\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)/archived-sessions.idx")
         try fm.createDirectory(at: home.appendingPathComponent("\(orig)/claude-code-sessions/\(Self.acctA)/\(Self.orgY)"), withIntermediateDirectories: true)
         // alpha: signed in to B; sessions in B/X and A/X (hidden) and A/Y
-        try entry("\(alpha)/claude-code-sessions/\(Self.acctB)/\(Self.orgX)", "local_bbbb0001", title: "Alpha visible", cli: "0c61c10e-24fb-4833-ac72-79f056141fcb", cwd: dir, last: 1_793_100_000_000, extra: "")
-        try entry("\(alpha)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)", "local_bbbb0002", title: "Alpha hidden one", cli: "51f8cd08-1a91-455b-a3ef-015294feec88", cwd: dir, last: 1_793_200_000_000, extra: "")
-        try entry("\(alpha)/claude-code-sessions/\(Self.acctA)/\(Self.orgY)", "local_bbbb0003", title: "Alpha hidden two", cli: "74961a5a-c9dd-41bc-a24e-49be6e41d9b5", cwd: dir, last: 1_793_300_000_000, extra: "")
+        try entry("\(alpha)/claude-code-sessions/\(Self.acctB)/\(Self.orgX)", "local_bbbb0001", title: "Alpha visible", cli: "cf6f18cc-6979-4284-afb9-e407cc72ffad", cwd: dir, last: 1_793_100_000_000, extra: "")
+        try entry("\(alpha)/claude-code-sessions/\(Self.acctA)/\(Self.orgX)", "local_bbbb0002", title: "Alpha hidden one", cli: "9696094d-11ea-45fb-ab9f-03627bcaedd4", cwd: dir, last: 1_793_200_000_000, extra: "")
+        try entry("\(alpha)/claude-code-sessions/\(Self.acctA)/\(Self.orgY)", "local_bbbb0003", title: "Alpha hidden two", cli: "3ef243f0-b7ae-4f62-ae18-e2bd826da673", cwd: dir, last: 1_793_300_000_000, extra: "")
 
         // ~/.claude/sessions
         let me = getpid()

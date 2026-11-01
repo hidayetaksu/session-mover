@@ -25,16 +25,16 @@ Read from this Mac on 29 Oct 2026. None of it is a documented format, which is w
 
 ```
 ~/.claude-profiles/work/Library/Application Support/Claude/
-├─ config.json                     lastKnownAccountUuid = eb90b3bb…
+├─ config.json                     lastKnownAccountUuid = af49c28e…
 ├─ git-worktrees.json              worktree leases, per session
 └─ claude-code-sessions/
-   ├─ eb90b3bb…/                   account A
-   │  └─ 2a5d8f8f…/                organization
+   ├─ af49c28e…/                   account A
+   │  └─ 551669f7…/                organization
    │     ├─ local_9d4daf90….json   one sidebar session
    │     ├─ archived-sessions.idx
    │     └─ scheduled-tasks.json
-   └─ 42b27042…/                   account B
-      └─ 2a5d8f8f…/ …
+   └─ f0346467…/                   account B
+      └─ 551669f7…/ …
 ~/.claude/projects/…/9d4daf90….jsonl   shared history, never moved
 ```
 

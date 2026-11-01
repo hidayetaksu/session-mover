@@ -169,7 +169,7 @@ final class MoveTests: XCTestCase {
     }
 
     func testCrossOrgNullsConnectorsAndDropsPin() throws {
-        try fx.write(#"{"sessionId":"local_bbbb0002","cliSessionId":"51f8cd08-1a91-455b-a3ef-015294feec88","cwd":"\#(fx.existingFolder)","title":"x","cliBinaryPin":{"v":1},"remoteMcpServersConfig":[{"uuid":"u1"}],"future":[1,{"z":2}]}"#,
+        try fx.write(#"{"sessionId":"local_bbbb0002","cliSessionId":"9696094d-11ea-45fb-ab9f-03627bcaedd4","cwd":"\#(fx.existingFolder)","title":"x","cliBinaryPin":{"v":1},"remoteMcpServersConfig":[{"uuid":"u1"}],"future":[1,{"z":2}]}"#,
                      "\(alpha)/\(ctx)/local_bbbb0002.json")
         let e = engine()
         let src = [entry(e, "local_bbbb0002", in: alphaID)]
@@ -256,7 +256,7 @@ final class MoveTests: XCTestCase {
 
     func testIdleOpenSessionWarnsWhenCopyRunsAndBlocksWhenItDoesNot() throws {
         let me = getpid()
-        try fx.write(#"{"pid":\#(me),"sessionId":"fe56159c-da13-4589-aa09-bbfd51cb6d4e","hostSessionId":"local_aaaa0002","status":"idle"}"#, ".claude/sessions/idle.json")
+        try fx.write(#"{"pid":\#(me),"sessionId":"3af5413f-ad2d-4f03-a684-3026a900f317","hostSessionId":"local_aaaa0002","status":"idle"}"#, ".claude/sessions/idle.json")
         let e1 = engine(alive: { $0 == me })
         let p1 = e1.preflight(sessions: entries(e1, "local_aaaa0002"), to: toAlphaA)
         XCTAssertTrue(p1.items[0].blocks.contains { $0.title.contains("open in a terminal") })
@@ -418,9 +418,9 @@ final class MoveTests: XCTestCase {
         // destination org folder does not exist yet
         let before = snapshot()
         let e = engine()
-        let dest = MoveDestination(instanceID: alphaID, accountID: "057d9a7e-d11e-4e5a-af5f-e3c4ff0344f6", orgID: Fixture.orgX)
+        let dest = MoveDestination(instanceID: alphaID, accountID: "5da54b2c-3145-4fb1-a3db-50f3d4f77dc5", orgID: Fixture.orgX)
         let rec = try e.perform(e.preflight(sessions: entries(e, "local_aaaa0001"), to: dest))
-        XCTAssertTrue(exists("\(alpha)/claude-code-sessions/057d9a7e-d11e-4e5a-af5f-e3c4ff0344f6/\(Fixture.orgX)/local_aaaa0001.json"))
+        XCTAssertTrue(exists("\(alpha)/claude-code-sessions/5da54b2c-3145-4fb1-a3db-50f3d4f77dc5/\(Fixture.orgX)/local_aaaa0001.json"))
         try e.undo(rec)
         XCTAssertEqual(diff(before, snapshot()), [])
     }

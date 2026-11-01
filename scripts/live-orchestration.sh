@@ -4,7 +4,7 @@ set -u
 R=/Users/me/code/claude-session-mover; B=$R/.build/debug/smctl; LOG=~/Library/Logs/Claude/main.log
 running() { pgrep -f "Claude-$1.app/Contents/MacOS/$1.real" >/dev/null; }
 openc() { open -b com.anthropic.claudefordesktop-$1; t=0; until running $1 || (( t>30 )); do sleep 1; ((t++)); done; sleep 12; }
-sid=local_e66a5d02-1e36-460c-af2e-0652cc98ddda
+sid=local_2861dab1-7d93-42c2-a52a-99e99e3e9502
 echo "### A. orchestrated move with both copies running"
 openc test1; openc test2; running test1 && running test2 && echo "both running"
 $B move $sid --to test2 --quit | grep -E "warn|BLOCK|done|Moved|move id"; echo exit=$?

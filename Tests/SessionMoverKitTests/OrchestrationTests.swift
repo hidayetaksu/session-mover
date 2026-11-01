@@ -160,7 +160,7 @@ final class OrchestrationTests: XCTestCase {
 
     func testIdleSessionsInQuittingCopiesWarn() throws {
         let me = getpid()
-        try fx.write(#"{"pid":\#(me),"sessionId":"fe56159c-da13-4589-aa09-bbfd51cb6d4e","hostSessionId":"local_aaaa0002","status":"idle"}"#, ".claude/sessions/idle.json")
+        try fx.write(#"{"pid":\#(me),"sessionId":"3af5413f-ad2d-4f03-a684-3026a900f317","hostSessionId":"local_aaaa0002","status":"idle"}"#, ".claude/sessions/idle.json")
         // the fixture also has an idle local_bbbb0002 in Alpha
         let both = engine(FakeWorld(running: [origID, alphaID]), alive: { $0 == me })
         let plan = both.preflight(sessions: entries(both, "local_aaaa0003"), to: toAlphaA, allowQuit: true)
@@ -432,7 +432,7 @@ final class OrchestrationTests: XCTestCase {
     func testFinishWithABusySessionInARunningCopyBlocks() throws {
         _ = try crash(at: "lease")
         let me = getpid()
-        try fx.write(#"{"pid":\#(me),"sessionId":"fe56159c-da13-4589-aa09-bbfd51cb6d4e","hostSessionId":"local_aaaa0002","status":"busy"}"#, ".claude/sessions/busy.json")
+        try fx.write(#"{"pid":\#(me),"sessionId":"3af5413f-ad2d-4f03-a684-3026a900f317","hostSessionId":"local_aaaa0002","status":"busy"}"#, ".claude/sessions/busy.json")
         let world = FakeWorld(running: [origID])
         let e = engine(world, alive: { $0 == me })
         let rec = e.recoverableMoves()[0]
@@ -505,7 +505,7 @@ final class OrchestrationTests: XCTestCase {
         let running = engine(FakeWorld(running: [origID, alphaID]))
         XCTAssertTrue(running.copyPlan(entry: src, to: MoveDestination(instanceID: alphaID)).canCopy)
         // an earlier copy at the destination warns, never blocks
-        try fx.write(#"{"sessionId":"local_copy0001","cliSessionId":"3152f529-8a3f-4550-aca5-1ef8deef4421","cwd":"/tmp","title":"x"}"#,
+        try fx.write(#"{"sessionId":"local_copy0001","cliSessionId":"56b71fd4-bc47-4a38-afb5-286a8622c7af","cwd":"/tmp","title":"x"}"#,
                      ".claude-profiles/alpha/Library/Application Support/Claude/claude-code-sessions/\(Fixture.acctB)/\(Fixture.orgX)/local_copy0001.json")
         let again = e.copyPlan(entry: src, to: MoveDestination(instanceID: alphaID))
         XCTAssertTrue(again.canCopy)

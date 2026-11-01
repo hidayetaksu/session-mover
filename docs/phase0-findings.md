@@ -15,7 +15,7 @@ Evidence types: **[exp]** an experiment on test1/test2, with log lines from `~/L
 | 5 | How does `git-worktrees.json` GC treat a lease whose session is gone? | It is ignored at first. If the same copy keeps seeing it for **24 h of continuous runtime** (`ccWorktreeReapAfterHours`), the pool sweep **reclaims** it: a clean worktree is parked (HEAD detached, `leasedBy: null`, handed to the next new session) or deleted; a missing dir's record is pruned. **So the lease must be removed from the source.** The destination recovers on its own when the session opens ("had lost its lease; leased it back in place"); transferring the record just makes it explicit. |
 | 6 | What is `archived-sessions.idx`? | `{"v":1,"archived":[local_…]}` per org folder: a **load-order hint** only. Listed ids load in a deferred second pass; the entry's `isArchived` is the truth. Claude rewrites the file from the entries after loading. |
 | 7 | Must session families move together? | **No.** A child whose parent is elsewhere loads and opens normally (shown standalone; it nests again when the parent is back). Exceptions: a child that **shares the parent's checkout** (`spawnedFrom.sharedCheckout`, `btwSharedTree`) can't start sub-sessions, or fails with "hostGone", without its host. A parent's `side-session-notes/<parentId>` folder is per copy and should travel with it. Preflight warns; it doesn't block. |
-| 8 | Is an account's id the same in every copy? | **Yes.** Account and org ids are server ids. test1, test2 and Work all store the same account under `eb90b3bb…/2a5d8f8f…`, and org `2a5d8f8f…` appears under three different accounts across Work and Client. Name each account once. |
+| 8 | Is an account's id the same in every copy? | **Yes.** Account and org ids are server ids. test1, test2 and Work all store the same account under `af49c28e…/551669f7…`, and org `551669f7…` appears under three different accounts across Work and Client. Name each account once. |
 
 **Must copies be quit during a move?** The **source must be quit**. It is proven to write a moved-away entry back (Q1). The **destination should be quit** (or relaunched afterwards). Moving into it while it runs is harmless, but the session only appears after a relaunch or account switch, and quitting both keeps their prefs and worktree files consistent. A move inside one copy (between accounts) quits that copy. Busy sessions block; an idle open session only warns, since quitting ends its process.
 
@@ -40,7 +40,7 @@ Full output: [phase0-runs.log](phase0-runs.log). Each move is followed by `spike
 |---|---|---|
 | Intermediate script | worktree session test1→test2; pinned session test1→test2; `undo` of that; then pinned test1→test2, worktree test2→test1, grouped test1→test2 | all PASS |
 | After the pin/group change | grouped test2→test1 (group carried), worktree test1→test2 (lease moved), pinned test2→test1 (pin followed via account) | 3/3 PASS |
-| Cross-account + cross-org in one copy | test1 `eb90b3bb/2a5d8f8f` → `a4007583/e4dae1a6` (`remoteMcpServersConfig` and `cliBinaryPin` cleared) and back | PASS |
+| Cross-account + cross-org in one copy | test1 `af49c28e/551669f7` → `d07e51d4/52e67e65` (`remoteMcpServersConfig` and `cliBinaryPin` cleared) and back | PASS |
 | **Final, committed script** (`sha1 4001df1b…`) | grouped test1→test2; worktree test2→test1; grouped test2→test1 | **3/3 PASS** |
 
 ## Details and evidence
@@ -55,7 +55,7 @@ Full output: [phase0-runs.log](phase0-runs.log). Each move is followed by `spike
 
 ### Q2. Cross-account/org entries
 
-- **[exp]** Entries imported under the Free account `a4007583…/e4dae1a6…` were moved into `eb90b3bb…/2a5d8f8f…` (other account and org) and loaded unchanged: mtimes untouched by loading. Opening one logged `already imported`, `Warming session …`, `replaceRemoteMcpServers: … serverCount=2`, `warmed successfully`. JSON diff before/after first open (other keys identical):
+- **[exp]** Entries imported under the Free account `d07e51d4…/52e67e65…` were moved into `af49c28e…/551669f7…` (other account and org) and loaded unchanged: mtimes untouched by loading. Opening one logged `already imported`, `Warming session …`, `replaceRemoteMcpServers: … serverCount=2`, `warmed successfully`. JSON diff before/after first open (other keys identical):
   ```
   cliBinaryPin: null -> {"version": "2.1.309", "wrapper": "0.3.309", ...}
   gitAnchors: null -> [{"gitRoot": ".../sm-spike-repo", ...}]
@@ -68,7 +68,7 @@ Full output: [phase0-runs.log](phase0-runs.log). Each move is followed by `spike
 ### Q3. Pins and groups
 
 - **[exp] Pin.** After pinning in test1: entry `isStarred: true`, and `claude_desktop_config.json` → `preferences.epitaxyPrefs.starred-local-code-sessions: ["local_c2a0…"]`. Moving the entry alone to test2 showed it **unpinned**, since test2's list was empty. Editing the lists by hand did not stick: removing the id from test1's list and adding another id to test2's, then relaunching, gave **both copies `["local_c2a0…"]`**. The hand-added pin was dropped and the removed one restored, with test1 logging `Cannot update session: local_c2a0… not found`. The list comes from the account (server), and the file is a cache. Both copies were on the same account, which is why the pin followed in the later runs.
-- **[exp] Group.** Creating "SpikeGroup" wrote to the same file: `dframe-group-scopes["eb90b3bb…/2a5d8f8f…"] = {groups:[{id:"cg-5f2e…",name:"SpikeGroup",mode:"code"}], assignments:{"code:local_b968…":"cg-5f2e…"}, order:{…}}` plus a section in `dframe-code-sections[…]`. test2 later had the *section* (synced) but an empty `dframe-group-scopes` (local). Writing the assignment into test2's file while it was quit made SPIKE-3 appear under SpikeGroup after launch, and it persisted. The script now does this.
+- **[exp] Group.** Creating "SpikeGroup" wrote to the same file: `dframe-group-scopes["af49c28e…/551669f7…"] = {groups:[{id:"cg-5f2e…",name:"SpikeGroup",mode:"code"}], assignments:{"code:local_b968…":"cg-5f2e…"}, order:{…}}` plus a section in `dframe-code-sections[…]`. test2 later had the *section* (synced) but an empty `dframe-group-scopes` (local). Writing the assignment into test2's file while it was quit made SPIKE-3 appear under SpikeGroup after launch, and it persisted. The script now does this.
 - **[code]** Main process keeps groups only as an in-memory cache filled by the renderer (`LocalSessions.setCustomGroups({accountUuid,orgUuid,groups,assignments})`, B@50445 class `ki`). `isStarred`/`color` are serialized in the entry (A `$M`), pushed by the renderer via `updateSession` (B@2249292).
 
 ### Q4. Tombstones and history
@@ -100,7 +100,7 @@ Full output: [phase0-runs.log](phase0-runs.log). Each move is followed by `spike
 
 ### Q8. Account ids
 
-- **[exp]** test1 and test2 signed in to the same account show `lastKnownAccountUuid = eb90b3bb-3789-…` and org `2a5d8f8f-677c-…`, identical to Work's folder for that account. Client's account `8053b654…` and Work's `42b27042…`/`eb90b3bb…` all use org `2a5d8f8f…`. These are server-issued ids, so AccountLabels can key by account id across copies.
+- **[exp]** test1 and test2 signed in to the same account show `lastKnownAccountUuid = af49c28e-8815-…` and org `551669f7-f059-…`, identical to Work's folder for that account. Client's account `7bea2ef2…` and Work's `f0346467…`/`af49c28e…` all use org `551669f7…`. These are server-issued ids, so AccountLabels can key by account id across copies.
 
 ## Other things found
 
@@ -116,3 +116,12 @@ Full output: [phase0-runs.log](phase0-runs.log). Each move is followed by `spike
 3. Show pins as account state: no file writes, and warn when moving to another account.
 4. Treat *Open a copy* + Delete as a transcript-loss risk (Q4) and say so in the copy sheet.
 5. Treat the 4.29.0 formats observed here (`git-worktrees.json` schemaVersion 2, idx `v:1`, `epitaxyPrefs` keys) as FormatGuard's first verified set.
+
+## Addendum: Claude 4.4212.0 (1 Nov 2026)
+
+Verified for full moves. FormatGuard lists it in `verified-versions.json`.
+
+- **Static comparison** (4.29.0 vs 4.4212.0 `app.asar`): the session persistence code is the same apart from renamed identifiers. Same folder layout and `local_` filter, same atomic writer and `.tmp` promotion, still loaded once per launch or account switch with no watcher, still saved by id (so the source must still quit). `git-worktrees.json` is still schema 2 with the same 24h pool sweep. The deep-link resume handler and its log lines are unchanged. Tombstones and transcript reaping are unchanged; delete can now set a transcript aside (`.jsonl.desktop-deleted-<nonce>`) and put it back at load.
+- **The "six new keys"** (`armedWorkAtQuit`, `chromeAllowedDomains`, `chromeTabGroupId`, `forkedAtMessageUuid`, `interruptedByQuitAt`, `promptSuggestion`) already existed in 4.29.0's serializer; none is bound to a copy, account or organization. The rewrite rules are unchanged (drop `cliBinaryPin`, null `remoteMcpServersConfig` across orgs, clear a usage-limit error).
+- **Sidebar groups:** after test1/test2 ran on 4.4212.0, `epitaxyPrefs.dframe-group-scopes["<acct>/<org>"]` still has `{groups, assignments, order}` with the same assignment.
+- **Live, on test1/test2 updated to 4.4212.0:** 3 round trips (6/6 PASS through `spike/verify.sh`), Quit & Move with both copies running, kill after the lease step then Finish, kill after writing the destination then Roll Back (every file identical by sha1), Open a Copy then Archive Copy. All passed.
