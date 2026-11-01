@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Not sandboxed: the app reads and writes other apps' data folders (see docs/PLAN.md). -->
+    <!-- Asking a Claude copy to quit goes through osascript, which needs Apple Events under the hardened runtime. -->
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+</dict>
+</plist>
