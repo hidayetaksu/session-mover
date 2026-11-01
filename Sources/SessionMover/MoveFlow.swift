@@ -34,7 +34,7 @@ final class MoveSession: Identifiable {
     enum Phase: Equatable { case review, running, finished, failed(message: String, log: String?) }
 
     let id = UUID()
-    let kind: Kind
+    var kind: Kind
     var plan: MovePlan?
     var restorePlan: RestorePlan?
     var copyPlan: CopyPlan?
@@ -108,6 +108,17 @@ extension AppStore {
         moveSession = session
     }
 
+    /// The organization picker on the sheet: run the checks again with that organization.
+    func chooseOrg(_ session: MoveSession, orgID: String) {
+        guard case .move(let entries, let dest) = session.kind, session.phase == .review else { return }
+        var d = dest
+        d.accountID = dest.accountID ?? session.plan?.items.compactMap(\.dstAccountID).first
+        d.orgID = orgID
+        engine.labels = settings.labels
+        session.kind = .move(entries: entries, destination: d)
+        session.plan = engine.preflight(sessions: entries, to: d, allowQuit: true, replace: session.replace)
+    }
+
     /// Replace: the same sheet, with the entry already at the destination replaced (after a backup).
     func beginReplace(_ session: MoveSession) {
         guard case .move(let entries, let dest) = session.kind else { return }
@@ -165,6 +176,13 @@ extension AppStore {
     /// True when every entry already sits in that account of that copy.
     func isCurrent(_ entries: [SessionEntry], instance: String, account: String) -> Bool {
         !entries.isEmpty && entries.allSatisfy { $0.instanceID == instance && $0.accountID == account }
+    }
+
+    /// Organizations of an account that hold sessions. Only when there is more than one does a menu offer the level.
+    func destinationOrgs(_ scan: InstanceScan, _ account: String) -> [OrgChoice] {
+        let full = scan.orgs.filter { $0.accountID == account && !$0.entries.isEmpty }
+        guard full.count > 1 else { return [] }
+        return full.map { OrgChoice(orgID: $0.orgID, label: orgName($0.orgID), entryCount: $0.entries.count) }
     }
 
     func destinationLabel(_ scan: InstanceScan, _ account: String) -> String {

@@ -73,7 +73,11 @@ extension MoveEngine {
 
         var refs = [record.to]
         for i in record.items where !refs.contains(where: { $0.bundleID == i.from.bundleID }) { refs.append(i.from) }
-        for r in refs where !policy.allows(slug: r.slug) { add(.allowlist, .block, "Moving into or out of \(r.name) is turned off.") }
+        let off = refs.filter { !policy.allows(slug: $0.slug) }
+        if !off.isEmpty {
+            add(.allowlist, .block, "Moving into or out of \(Self.joinNames(off.map(\.name))) is turned off.",
+                off.count == 1 ? "Turn it on in Settings ▸ Moves." : "Turn them on in Settings ▸ Moves.")
+        }
 
         let open = refs.filter { isRunning($0) }
         rows.append(appsRow(open: open, allowQuit: allowQuit, then: "restore", ignoring: Set(record.items.map(\.sessionID))))

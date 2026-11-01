@@ -157,7 +157,11 @@ public final class MoveEngine: @unchecked Sendable {
             }
 
             // Write allowlist
-            for i in distinct where !policy.allows(i) { add(.allowlist, .block, "Moving into or out of \(i.name) is turned off.") }
+            let off = distinct.filter { !policy.allows($0) }
+            if !off.isEmpty {
+                add(.allowlist, .block, "Moving into or out of \(Self.joinNames(off.map(\.name))) is turned off.",
+                    off.count == 1 ? "Turn it on in Settings ▸ Moves." : "Turn them on in Settings ▸ Moves.")
+            }
 
             // App versions
             var versionBlocked = false
@@ -212,6 +216,17 @@ public final class MoveEngine: @unchecked Sendable {
                 if let o = dest.orgID { dstOrg = o }
                 else if orgs.isEmpty || orgs.contains(e.orgID) { dstOrg = e.orgID }
                 else if orgs.count == 1 { dstOrg = orgs[0] }
+                else {
+                    // Several folders, none the session's own: empty ones don't count.
+                    let counts = dstScan.orgs.filter { $0.accountID == acct }
+                    let full = counts.filter { !$0.entries.isEmpty }
+                    if full.count == 1 { dstOrg = full[0].orgID }
+                    else {
+                        plan.orgChoices = (full.isEmpty ? counts : full).map {
+                            OrgChoice(orgID: $0.orgID, label: labels.display(org: $0.orgID), entryCount: $0.entries.count)
+                        }
+                    }
+                }
                 if let org = dstOrg {
                     plan.dstOrgID = org
                     let folder = dst.sessionsRoot.appendingPathComponent(acct).appendingPathComponent(org)
@@ -228,7 +243,7 @@ public final class MoveEngine: @unchecked Sendable {
                         add(.destination, .block, "Already in \(phrase(dst.name, account: clash.accountID))"); plan.isDuplicate = true
                     } else { add(.destination, .pass, "Not in \(here) yet") }
                 } else {
-                    add(.destination, .block, "\(dst.name) has several organizations in that account.", "Choose an organization.")
+                    add(.destination, .block, "\(dst.name) has several organizations in that account.", "Choose an organization below.")
                 }
             } else {
                 add(.destination, .block, "\(dst.name) isn't signed in to an account.", "Choose an account in \(dst.name).")

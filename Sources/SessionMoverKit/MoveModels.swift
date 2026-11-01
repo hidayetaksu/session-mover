@@ -94,8 +94,19 @@ public struct AggregatedRow: Identifiable, Hashable, Sendable {
     public var status: CheckStatus
     public var title: String
     public var detail: String?
-    public var affected: [String]       // session titles with this status
+    public var affected: [String]       // distinct session titles with this status; empty for a single-session plan
     public var total: Int
+    /// On the destination row when the organization has to be chosen.
+    public var orgChoices: [OrgChoice] = []
+}
+
+/// One organization folder the user can pick when an account has several and none is the session's own.
+public struct OrgChoice: Identifiable, Hashable, Sendable {
+    public var id: String { orgID }
+    public var orgID: String
+    public var label: String
+    public var entryCount: Int
+    public init(orgID: String, label: String, entryCount: Int) { self.orgID = orgID; self.label = label; self.entryCount = entryCount }
 }
 
 // MARK: Plan
@@ -113,6 +124,8 @@ public struct SessionPlan: Identifiable, Sendable {
     /// An entry with this id is already at the destination. Replace isn't built yet.
     public var isDuplicate: Bool
     public var leaseNames: [String]
+    /// Organizations to choose from when the destination account has several (empty otherwise).
+    public var orgChoices: [OrgChoice] = []
 
     public var isBlocked: Bool { rows.contains { $0.status == .block } }
     public var blocks: [CheckRow] { rows.filter { $0.status == .block } }
@@ -130,6 +143,9 @@ public struct MovePlan: Sendable {
     public var mustQuit: [Instance] = []
     /// Built to replace an entry that is already at the destination.
     public var replace = false
+
+    /// The organizations the sheet offers for the first session that needs a choice.
+    public var orgChoices: [OrgChoice] { items.first(where: { !$0.orgChoices.isEmpty })?.orgChoices ?? [] }
 
     public var movable: [SessionPlan] { items.filter { !$0.isBlocked } }
     public var blocked: [SessionPlan] { items.filter(\.isBlocked) }
@@ -158,7 +174,9 @@ public struct MovePlan: Sendable {
         for kind in CheckKind.allCases {
             guard let rows = byKind[kind], !rows.isEmpty else { continue }
             let worst = rows.map(\.status).max() ?? .pass
-            let hit = rows.filter { $0.status == worst }
+            // One row per session: a session can raise the same check for each copy.
+            var seen = Set<String>()
+            let hit = rows.filter { $0.status == worst && seen.insert($0.sessionKey).inserted }
             let sameText = Set(hit.map(\.title)).count == 1
             var title = hit[0].title
             if total > 1 && (hit.count < total || !sameText) {
@@ -166,7 +184,8 @@ public struct MovePlan: Sendable {
             }
             out.append(AggregatedRow(kind: kind, status: worst, title: title,
                                      detail: hit.count == 1 || sameText ? hit[0].detail : nil,
-                                     affected: hit.compactMap { titles[$0.sessionKey] }, total: total))
+                                     affected: total > 1 ? hit.compactMap { titles[$0.sessionKey] } : [], total: total,
+                                     orgChoices: kind == .destination && worst == .block ? orgChoices : []))
         }
         return out
     }

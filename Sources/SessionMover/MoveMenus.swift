@@ -14,9 +14,24 @@ struct MoveToMenu: View {
                     ForEach(store.destinationAccounts(scan), id: \.self) { a in
                         let current = store.isCurrent(entries, instance: scan.id, account: a)
                         let signedIn = scan.signedInAccountID == a
-                        Button("\(store.accountName(a))\(current ? " (Current)" : signedIn ? " (Signed In)" : "")") {
-                            store.beginMove(entries, to: MoveDestination(instanceID: scan.id, accountID: a))
-                        }.disabled(current)
+                        let orgs = store.destinationOrgs(scan, a)
+                        let name = "\(store.accountName(a))\(current ? " (Current)" : signedIn ? " (Signed In)" : "")"
+                        if orgs.isEmpty {
+                            Button(name) {
+                                store.beginMove(entries, to: MoveDestination(instanceID: scan.id, accountID: a))
+                            }.disabled(current)
+                        } else {
+                            Menu(name) {
+                                Button("Same or Default Organization") {
+                                    store.beginMove(entries, to: MoveDestination(instanceID: scan.id, accountID: a))
+                                }.disabled(current)
+                                ForEach(orgs) { o in
+                                    Button("\(o.label) (\(o.entryCount))") {
+                                        store.beginMove(entries, to: MoveDestination(instanceID: scan.id, accountID: a, orgID: o.orgID))
+                                    }
+                                }
+                            }
+                        }
                     }
                     if store.destinationAccounts(scan).isEmpty { Text("Not signed in") }
                 }
@@ -65,8 +80,15 @@ struct MovePickerView: View {
             for a in (copy ? [scan.signedInAccountID].compactMap { $0 } : store.destinationAccounts(scan)) {
                 let cur = store.isCurrent(entries, instance: scan.id, account: a)
                 let signed = scan.signedInAccountID == a
-                out.append(Choice(id: "\(scan.id)|\(a)", label: "\(store.destinationLabel(scan, a))\(cur ? " (Current)" : signed ? " (Signed In)" : "")",
+                let base = "\(store.destinationLabel(scan, a))\(cur ? " (Current)" : signed ? " (Signed In)" : "")"
+                out.append(Choice(id: "\(scan.id)|\(a)", label: base,
                                   current: cur, destination: MoveDestination(instanceID: scan.id, accountID: a)))
+                if !copy {
+                    for o in store.destinationOrgs(scan, a) {
+                        out.append(Choice(id: "\(scan.id)|\(a)|\(o.orgID)", label: "\(store.destinationLabel(scan, a)) ▸ \(o.label) (\(o.entryCount))",
+                                          current: false, destination: MoveDestination(instanceID: scan.id, accountID: a, orgID: o.orgID)))
+                    }
+                }
             }
         }
         let q = query.trimmingCharacters(in: .whitespaces)

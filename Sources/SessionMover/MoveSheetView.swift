@@ -7,6 +7,7 @@ private struct DisplayRow: Identifiable {
     let title: String
     let detail: String?
     let affected: [String]
+    var orgChoices: [OrgChoice] = []
 }
 
 extension CheckStatus {
@@ -100,7 +101,7 @@ struct MoveSheetView: View {
 
     private var rows: [DisplayRow] {
         if let plan = session.plan {
-            return plan.rows.map { DisplayRow(id: $0.id, status: $0.status, title: $0.title, detail: $0.detail, affected: $0.affected) }
+            return plan.rows.map { DisplayRow(id: $0.id, status: $0.status, title: $0.title, detail: $0.detail, affected: $0.affected, orgChoices: $0.orgChoices) }
         }
         if let plan = session.copyPlan {
             return plan.rows.map { DisplayRow(id: $0.id, status: $0.status, title: $0.title, detail: $0.detail, affected: []) }
@@ -114,7 +115,9 @@ struct MoveSheetView: View {
                 Text("Session Mover stopped part-way through this move\(r.step.map { " (\(MoveEngineText.step($0)))" } ?? ""). Finish picks up where it stopped. Roll Back puts every file back as it was.")
                     .font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
-            VStack(alignment: .leading, spacing: 8) { ForEach(rows) { CheckRowView(row: $0) } }
+            VStack(alignment: .leading, spacing: 8) { ForEach(rows) { r in
+                CheckRowView(row: r, pickOrg: { store.chooseOrg(session, orgID: $0) })
+            } }
             if session.isMove {
                 Label {
                     Text("History comes along. Conversations live in ~/.claude/projects, which every instance reads. This move doesn't touch them.")
@@ -314,6 +317,7 @@ enum MoveEngineText {
 
 struct CheckRowView: View {
     fileprivate let row: DisplayRow
+    var pickOrg: (String) -> Void = { _ in }
     @State private var expanded = false
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
@@ -321,6 +325,14 @@ struct CheckRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.title).font(.system(size: 13)).fixedSize(horizontal: false, vertical: true)
                 if let d = row.detail { Text(d).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+                if !row.orgChoices.isEmpty {
+                    Menu("Choose Organization") {
+                        ForEach(row.orgChoices) { c in
+                            Button("\(c.label) (\(c.entryCount) \(c.entryCount == 1 ? "entry" : "entries"))") { pickOrg(c.orgID) }
+                        }
+                    }
+                    .fixedSize().padding(.top, 2)
+                }
                 if row.status != .pass, row.affected.count > 1 {
                     ForEach(row.affected, id: \.self) { Text("• \($0)").font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1) }
                 }
